@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/hcl/v2/hclsimple"
@@ -20,6 +21,36 @@ func main() {
 	single := flag.Bool("single", false, "works only when exactly one session is defined")
 
 	flag.Parse()
+
+	args := flag.Args()
+
+	if len(args) > 0 {
+		switch args[0] {
+		case "init":
+			if len(args) < 2 {
+				fmt.Println("usage: tsd init <filename.hcl>")
+				return
+			}
+
+			currentDirectory, err := os.Getwd()
+			if err != nil {
+				fmt.Printf("error: %v\n", err)
+				return
+			}
+
+			if filepath.Ext(args[1]) != ".hcl" {
+				fmt.Println("error: filename must have a .hcl extension")
+				return
+			}
+
+			if err := executor.Init(currentDirectory, args[1]); err != nil {
+				fmt.Printf("error: %v\n", err)
+				return
+			}
+
+			return
+		}
+	}
 
 	if *help {
 		cli.PrintHelp()
